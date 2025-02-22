@@ -48,8 +48,27 @@ SELECT @nuevoIdCiudad=MAX(Id)+1
 
 --Obtener el Id de un nuevo ESTADIO
 SELECT @nuevoIdEstadio=MAX(Id)+1
-        FROM estadio;
+        FROM Estadio;
 
 SELECT @idEstadio1=id
 	FROM Estadio 
 	WHERE Estadio='Estadio Atanasio Girardot';
+IF @idEstadio1 IS NULL --Verifica si 'Estadio Atanasio Girardot' no está en la base de datos
+BEGIN
+	SELECT @idMedellin=Id FROM Ciudad WHERE Ciudad='Medellín';
+	IF @idMedellin IS NULL  --Verifica si 'Medellín' no está en la base de datos
+		BEGIN
+			SET IDENTITY_INSERT Ciudad ON --Obliga a reemplazar el Id autonumérico
+			INSERT INTO Ciudad
+				(id, Ciudad, IdPais) VALUES(@nuevoIdCiudad, 'Medellín', @idColombia);
+			SET IDENTITY_INSERT Ciudad OFF
+			SET @idMedellin = @nuevoIdCiudad;
+			SET @nuevoIdCiudad = @nuevoIdCiudad + 1;
+		END;
+	SET IDENTITY_INSERT Estadio ON --Obliga a reemplazar el Id autonumérico
+	INSERT INTO Estadio
+		(Id, Estadio, Capacidad, IdCiudad) VALUES(@nuevoIdEstadio, 'Estadio Atanasio Girardot', 0, @idMedellin);
+	SET IDENTITY_INSERT Estadio OFF
+	SET @idColombia = @nuevoIdPais;
+	SET @nuevoIdPais = @nuevoIdPais + 1;
+END
