@@ -8,7 +8,8 @@ DECLARE @nuevoIdPais int,
 	@idEstadio1 int, @idEstadio2 int, @idEstadio3 int, @idEstadio4 int,
 	@nuevoIdGrupo int,
 	@idPais1Grupo int, @idPais2Grupo int, @idPais3Grupo int, @idPais4Grupo int,
-	@totalPaises int;
+	@totalPaises int,
+	@nuevoIdEncuentro int;
 
 --Obtener el Id de un nuevo PAIS
 SELECT @nuevoIdPais=MAX(Id)+1
@@ -164,15 +165,16 @@ BEGIN
 	SET IDENTITY_INSERT Grupo OFF;
 END
 
+--***** Validar si ya están los Paises del Grupo A *****
+SET IDENTITY_INSERT Pais ON --Obliga a reemplazar el Id autonumérico
+
 SET @idPais1Grupo = @idColombia; --'Colombia' es el Pais1 del Grupo A
 
 SELECT @idPais2Grupo=id  FROM Pais WHERE pais='Australia';
 IF @idPais2Grupo IS NULL --verifica si 'Australia' no existe en la base de datos
 BEGIN
-	SET IDENTITY_INSERT Pais ON --Obliga a reemplazar el Id autonumérico
     INSERT INTO Pais
         (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'Australia', '');
-	SET IDENTITY_INSERT Pais OFF
     SET @idPais2Grupo = @nuevoIdPais;
     SET @nuevoIdPais = @nuevoIdPais + 1;
 END;
@@ -180,10 +182,8 @@ END;
 SELECT @idPais3Grupo=id  FROM Pais WHERE pais='Camerún';
 IF @idPais3Grupo IS NULL --verifica si 'Camerún' no existe en la base de datos
 BEGIN
-	SET IDENTITY_INSERT Pais ON --Obliga a reemplazar el Id autonumérico
     INSERT INTO Pais
         (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'Camerún', '');
-	SET IDENTITY_INSERT Pais OFF
     SET @idPais3Grupo = @nuevoIdPais;
     SET @nuevoIdPais = @nuevoIdPais + 1;
 END;
@@ -191,13 +191,13 @@ END;
 SELECT @idPais4Grupo=id  FROM Pais WHERE pais='México';
 IF @idPais4Grupo IS NULL --verifica si 'Camerún' no existe en la base de datos
 BEGIN
-	SET IDENTITY_INSERT Pais ON --Obliga a reemplazar el Id autonumérico
     INSERT INTO Pais
         (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'México', '');
-	SET IDENTITY_INSERT Pais OFF
     SET @idPais4Grupo = @nuevoIdPais;
     SET @nuevoIdPais = @nuevoIdPais + 1;
 END;
+
+SET IDENTITY_INSERT Pais OFF
 
 SELECT @totalPaises=COUNT(*)
     FROM GrupoPais
@@ -213,3 +213,34 @@ BEGIN
 		(@nuevoIdGrupo, @idPais3Grupo),
 		(@nuevoIdGrupo, @idPais4Grupo)
 END
+
+--Obtener el Id de un nuevo Encuentro
+SELECT @nuevoIdEncuentro=MAX(Id)+1
+	FROM Encuentro;
+
+--***** Validar si ya estan los Encuentros de la Fase de Grupos del Grupo A *****
+SET IDENTITY_INSERT Encuentro ON --Obliga a reemplazar el Id autonumérico
+
+-- Camerun vs Mexico
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais3Grupo AND IdPais2=@idPais4Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais3Grupo, 2, @idPais4Grupo, 2, '2024-08-31', @idEstadio3, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Colombia vs Australia
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais1Grupo AND IdPais2=@idPais2Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais1Grupo, 2, @idPais2Grupo, 0, '2024-08-31', @idEstadio3, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+SET IDENTITY_INSERT Encuentro OFF
