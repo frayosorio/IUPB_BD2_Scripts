@@ -34,3 +34,13 @@ SELECT *
 -- Listar las Fases
 SELECT * FROM Fase
 
+--Eliminar los PAISES en Grupos del Campeonato
+DELETE GP
+	FROM GrupoPais GP
+		JOIN Grupo G ON GP.IdGrupo=G.Id
+	WHERE G.IdCampeonato=10
+
+-- Eliminar los encuentros agregados
+DELETE FROM Encuentro WHERE YEAR(Fecha)=2024
+
+

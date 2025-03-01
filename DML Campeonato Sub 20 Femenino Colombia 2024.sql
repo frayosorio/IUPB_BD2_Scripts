@@ -166,6 +166,7 @@ BEGIN
 END
 
 --***** Validar si ya están los Paises del Grupo A *****
+
 SET IDENTITY_INSERT Pais ON --Obliga a reemplazar el Id autonumérico
 
 SET @idPais1Grupo = @idColombia; --'Colombia' es el Pais1 del Grupo A
@@ -240,6 +241,184 @@ BEGIN
 	INSERT INTO Encuentro
 		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
 		VALUES(@nuevoIdEncuentro, @idPais1Grupo, 2, @idPais2Grupo, 0, '2024-08-31', @idEstadio3, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Mexico vs Australia
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais4Grupo AND IdPais2=@idPais2Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais4Grupo, 2, @idPais2Grupo, 0, '2024-09-03', @idEstadio3, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Colombia vs Australia
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais1Grupo AND IdPais2=@idPais3Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais1Grupo, 1, @idPais3Grupo, 0, '2024-09-03', @idEstadio3, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Mexico vs Colombia
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais4Grupo AND IdPais2=@idPais1Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais4Grupo, 0, @idPais1Grupo, 1, '2024-09-06', @idEstadio1, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Australia vs Camerún
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais2Grupo AND IdPais2=@idPais3Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais2Grupo, 0, @idPais3Grupo, 2, '2024-09-06', @idEstadio3, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+SET IDENTITY_INSERT Encuentro OFF
+
+--***** Validar si ya están los Paises del Grupo B *****
+SET @idPais1Grupo=NULL;
+SET @idPais2Grupo=NULL;
+SET @idPais3Grupo=NULL;
+SET @idPais4Grupo=NULL;
+
+SET IDENTITY_INSERT Pais ON --Obliga a reemplazar el Id autonumérico
+
+SELECT @idPais1Grupo=id  FROM Pais WHERE pais='Francia';
+IF @idPais1Grupo IS NULL --verifica si 'Francia' no existe en la base de datos
+BEGIN
+    INSERT INTO Pais
+        (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'Francia', '');
+    SET @idPais1Grupo = @nuevoIdPais;
+    SET @nuevoIdPais = @nuevoIdPais + 1;
+END;
+
+SELECT @idPais2Grupo=id  FROM Pais WHERE pais='Canadá';
+IF @idPais2Grupo IS NULL --verifica si 'Canadá' no existe en la base de datos
+BEGIN
+    INSERT INTO Pais
+        (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'Canadá', '');
+    SET @idPais2Grupo = @nuevoIdPais;
+    SET @nuevoIdPais = @nuevoIdPais + 1;
+END;
+
+SELECT @idPais3Grupo=id  FROM Pais WHERE pais='Brasil';
+IF @idPais3Grupo IS NULL --verifica si 'Brasil' no existe en la base de datos
+BEGIN
+    INSERT INTO Pais
+        (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'Brasil', '');
+    SET @idPais3Grupo = @nuevoIdPais;
+    SET @nuevoIdPais = @nuevoIdPais + 1;
+END;
+
+SELECT @idPais4Grupo=id  FROM Pais WHERE pais='Fiyi';
+IF @idPais4Grupo IS NULL --verifica si 'Fiyi' no existe en la base de datos
+BEGIN
+    INSERT INTO Pais
+        (Id, Pais, Entidad) VALUES(@nuevoIdPais, 'Fiyi', '');
+    SET @idPais4Grupo = @nuevoIdPais;
+    SET @nuevoIdPais = @nuevoIdPais + 1;
+END;
+
+SET IDENTITY_INSERT Pais OFF
+
+SELECT @totalPaises=COUNT(*)
+    FROM GrupoPais
+    WHERE IdGrupo=@nuevoIdGrupo+1;
+
+IF @totalPaises=0
+BEGIN
+	INSERT INTO GrupoPais
+		(IdGrupo, IdPais)
+		VALUES
+		(@nuevoIdGrupo+1, @idPais1Grupo),
+		(@nuevoIdGrupo+1, @idPais2Grupo),
+		(@nuevoIdGrupo+1, @idPais3Grupo),
+		(@nuevoIdGrupo+1, @idPais4Grupo)
+END
+
+--***** Validar si ya estan los Encuentros de la Fase de Grupos del Grupo B *****
+
+SET IDENTITY_INSERT Encuentro ON --Obliga a reemplazar el Id autonumérico
+
+-- Francia vs Canadá
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais1Grupo AND IdPais2=@idPais2Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais1Grupo, 3, @idPais2Grupo, 3, '2024-08-31', @idEstadio1, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Brasil vs Fiyi
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais3Grupo AND IdPais2=@idPais4Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais3Grupo, 9, @idPais4Grupo, 0, '2024-08-31', @idEstadio1, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Francia vs Brasil
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais1Grupo AND IdPais2=@idPais3Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais1Grupo, 0, @idPais3Grupo, 3, '2024-09-03', @idEstadio1, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Fiyi vs Canadá
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais4Grupo AND IdPais2=@idPais2Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais4Grupo, 0, @idPais2Grupo, 9, '2024-09-03', @idEstadio1, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+
+-- Fiyi vs Francia
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais4Grupo AND IdPais2=@idPais1Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais4Grupo, 0, @idPais1Grupo, 11, '2024-09-06', @idEstadio1, 1, @nuevoIdCampeonato);
+	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
+END
+
+-- Australia vs Camerún
+IF NOT EXISTS(SELECT * FROM Encuentro
+			WHERE IdPais1=@idPais2Grupo AND IdPais2=@idPais3Grupo
+				AND IdCampeonato=@nuevoIdCampeonato AND IdFase=1)
+BEGIN
+	INSERT INTO Encuentro
+		(Id, IdPais1, Goles1, IdPais2, Goles2, Fecha, IdEstadio, IdFase, IdCampeonato)
+		VALUES(@nuevoIdEncuentro, @idPais2Grupo, 0, @idPais3Grupo, 2, '2024-09-06', @idEstadio3, 1, @nuevoIdCampeonato);
 	SET @nuevoIdEncuentro=@nuevoIdEncuentro+1;
 END
 
