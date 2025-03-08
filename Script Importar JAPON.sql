@@ -1,7 +1,11 @@
 USE DivisionPolitica
 GO
 
-DROP TABLE #Japon
+IF NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+					WHERE TABLE_NAME='Japon')
+BEGIN
+	DROP TABLE #Japon
+END;
 
 --Crear una tabla temporal para recibir los datos
 CREATE TABLE #Japon(
@@ -67,3 +71,7 @@ INSERT INTO Ciudad
 		FROM #Japon J
 			JOIN Region R ON J.Prefectura=R.Nombre 
 			AND  R.IdPais=@IdPais
+		WHERE J.Capital NOT IN (SELECT C.Nombre
+									FROM Ciudad C
+										JOIN Region R ON C.IdRegion=R.Id
+									WHERE IdPais=@IdPais)

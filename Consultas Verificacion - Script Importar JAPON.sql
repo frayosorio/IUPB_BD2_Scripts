@@ -15,6 +15,16 @@ SELECT COUNT(*)
 			ON P.Id=R.IdPais
 	WHERE P.Nombre='Japón'
 
+--Eliminar las ciudades de JAPON
+DELETE C 
+	--SELECT C.*
+	FROM Pais P
+		LEFT JOIN Region R
+			ON P.Id=R.IdPais
+		LEFT JOIN Ciudad C
+			ON C.IdRegion=R.Id
+	WHERE P.Nombre='Japón'
+
 --Eliminar las regiones de JAPON
 DELETE R 
 	FROM Pais P
