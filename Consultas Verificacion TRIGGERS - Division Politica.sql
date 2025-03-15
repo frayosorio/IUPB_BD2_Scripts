@@ -72,3 +72,35 @@ UPDATE Ciudad
 --Eliminar Ciudades agregadas para pruebas
 DELETE FROM Ciudad	
 	WHERE Nombre IN ('San Antonio de Pereira', 'Santa Helena', 'San Antonio de Prado')
+
+
+--Crear vista de ciudades
+CREATE VIEW vwCiudades AS
+	SELECT C.Id IdCiudad, C.Nombre Ciudad,
+		R.Id IdRegion, R.Nombre Region,
+		P.Id IdPais, P.Nombre Pais,
+		C.CapitalPais, C.CapitalRegion
+	FROM Pais P
+		LEFT JOIN Region R ON R.IdPais=P.Id
+		LEFT JOIN Ciudad C ON C.IdRegion = R.Id
+GO
+
+
+--Consultar las Capitales de los paises
+SELECT Pais,
+	CASE WHEN CapitalPais=1
+		THEN Ciudad
+	ELSE
+		'** Sin capital **'
+	END Capital
+	FROM vwCiudades
+	WHERE CapitalPais=1 OR Ciudad IS NULL
+
+--Tratar de hacer capital 2 ciudades
+UPDATE Ciudad	
+	SET CapitalPais=1
+	WHERE Nombre in ('Bello', 'Envigado')
+
+UPDATE Ciudad	
+	SET CapitalPais=1
+	WHERE Nombre like '%bogota%'

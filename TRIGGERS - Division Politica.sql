@@ -48,3 +48,30 @@ AS BEGIN
 
 END
 GO
+
+--Trigger para actualizar la capital de un país
+ALTER TRIGGER tActualizarCapitalPais
+ON Ciudad
+FOR INSERT, UPDATE
+AS
+BEGIN
+	-- Evitar ejecución recursiva del trigger
+    IF TRIGGER_NESTLEVEL() > 1
+        RETURN;	
+
+	-- Asegurarnos de que solo quede una ciudad como CapitalPais = 1 por cada Pais
+	WITH UltimaCapital AS (SELECT C.Id, R.IdPais
+							FROM Inserted I
+								JOIN Ciudad C ON C.Id=I.Id
+								JOIN Region R ON C.IdRegion=R.Id
+							WHERE I.CapitalPais=1)
+
+	UPDATE C
+		SET C.CapitalPais=CASE WHEN C.Id=U.Id THEN 1
+							ELSE 0
+							END
+		FROM Ciudad C
+			JOIN Region R ON C.IdRegion=R.Id
+			JOIN UltimaCapital U ON U.IdPais = R.IdPais
+END;
+GO;
