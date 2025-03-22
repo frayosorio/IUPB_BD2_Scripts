@@ -1,3 +1,4 @@
+--Procedimiento con CURSORES
 ALTER PROCEDURE spGenerarEncuentrosGrupo
 @idGrupo int
 AS BEGIN
@@ -66,6 +67,30 @@ AS BEGIN
 
 	--Liberar cursor
 	DEALLOCATE cPaises
+END
+GO
 
+--Procedimiento sin CURSORES
+ALTER PROCEDURE spGenerarEncuentrosGrupo
+@idGrupo int
+AS BEGIN
+	DECLARE @idCampeonato int
 
+	--Obtner el ID del Campeonato del grup
+	SELECT @idCampeonato=IdCampeonato
+		FROM Grupo
+		WHERE Id=@idGrupo
+
+	INSERT INTO Encuentro
+		(IdPais1, IdPais2, IdEstadio, IdFase, IdCampeonato)
+		SELECT GP1.IdPais, GP2.IdPais, 0, 1, @idCampeonato
+			FROM GrupoPais GP1
+				JOIN GrupoPais GP2
+					ON GP1.IdGrupo=GP2.IdGrupo AND GP1.IdPais < GP2.IdPais
+			WHERE GP1.IdGrupo=@idGrupo
+				AND NOT EXISTS(SELECT 1 FROM Encuentro
+							WHERE ((IdPais1=GP1.IdPais AND IdPais2=GP2.IdPais)
+								OR(IdPais1=GP2.IdPais AND IdPais2=GP1.IdPais))
+								AND IdFase=1
+								AND IdCampeonato=@IdCampeonato)
 END
