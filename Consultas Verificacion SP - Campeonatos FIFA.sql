@@ -9,6 +9,11 @@ SELECT *
 	FROM Estadio
 
 --Listar los Encuentros de un Campeonato
+SELECT *
+	FROM vEnCuentro
+	WHERE IdCampeonato=4
+
+--Listar los Encuentros de un Grupo
 DECLARE @IdGrupo INT
 SET @IdGrupo=2
 SELECT *
