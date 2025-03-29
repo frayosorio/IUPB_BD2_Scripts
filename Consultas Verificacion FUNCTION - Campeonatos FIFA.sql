@@ -22,6 +22,6 @@ SELECT *
 --Eliminar Paises y Grupos de un Campeonato
 DELETE GP
 	FROM Grupo G
-		JOIN grupopais GP on gp.idgrupo=g.id
+		JOIN GrupoPais GP on gp.idgrupo=g.id
 		--DELETE FROM Grupo
 		where IdCampeonato=11

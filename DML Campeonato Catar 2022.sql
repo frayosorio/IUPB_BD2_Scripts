@@ -1,3 +1,13 @@
+-- Ciudades y estadios
+-- 1: Jor       - 1: Estadio Al Bayt
+-- 2: Lusail    - 2: Estadio de Lusail
+-- 3: Doha      - 3: Estadio 974, 
+--                4: Estadio Al Thumama 
+-- 4: Rayán     - 5: Estadio Ciudad de la Educación,
+--                6: Estadio Áhmad bin Ali,
+--                7: Estadio Internacional Khalifa
+-- 5: Al Wakrah - 8: Estadio Al Janoub
+
 --Declaracion de variables
 DECLARE @nuevoIdPais int,
 	@idCatar int,
