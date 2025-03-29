@@ -27,11 +27,10 @@ EXEC spGenerarEncuentrosGrupo 2
 
 --Eliminar registros de un grupo
 DECLARE @IdGrupoEliminar INT
-SET @IdGrupoEliminar=6
+SET @IdGrupoEliminar=25
 DELETE FROM EnCuentro
 	WHERE (IdPais1 IN (SELECT IdPais FROM GrupoPais WHERE IdGrupo=@IdGrupoEliminar)
 	OR IdPais2 IN (SELECT IdPais FROM GrupoPais WHERE IdGrupo=@IdGrupoEliminar))
 	AND IdCampeonato=(SELECT IdCampeonato FROM Grupo WHERE Id=@IdGrupoEliminar)
-
 
 
