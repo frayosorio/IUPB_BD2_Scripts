@@ -184,3 +184,17 @@ BEGIN
 
 	RETURN
 END
+GO
+
+--Funcion escalar que devuelve el estadio de un encuentro
+ALTER FUNCTION fObtenerEstadioEncuentro(@idEncuentro int)
+RETURNS varchar(200)
+AS
+BEGIN
+	DECLARE @Estadio varchar(200)
+	SELECT @Estadio=Estadio + ' - ' + Ciudad +  ' - ' + Campeonato
+		FROM vEnCuentro
+		WHERE Id=@idEncuentro
+
+	RETURN @Estadio
+END
