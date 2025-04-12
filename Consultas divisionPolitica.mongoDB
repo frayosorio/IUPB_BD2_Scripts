@@ -66,3 +66,174 @@ db.paises.aggregate(
 	}
 } }
 );
+
+//Contar las Regiones de un Pais
+db.paises.aggregate(
+  { $match: { nombre: { $regex: "^brasil$", $options: "i" } } },
+  { $project: {
+		pais: "$nombre",
+		totalRegiones: { $size: "$regiones" }
+		}
+  }
+);
+
+//Contar las Regiones de un Continente
+db.paises.aggregate(
+  { $match: { continente: { $regex: "^america$", $options: "i" } } },
+  { $project: {
+		pais: "$nombre",
+		totalRegiones: { $size: { $ifNull: [ "$regiones", [] ] } }
+		}
+  },
+  {
+		$group: {
+			_id: null,
+			totalRegionesContinente: { $sum: "$totalRegiones" }
+		}
+	}
+);
+
+//Totalizar las poblaciones de cada Pais
+db.paises.aggregate({
+  $project: {
+  	pais: "$nombre",
+  	poblacionTotal: { $sum: "$regiones.poblacion" }
+  }
+});
+
+//Totalizar la población de un Pais
+db.paises.aggregate(
+	{ $match: { nombre: { $regex: "^brasil$", $options: "i" } } },
+  {
+  	$project: {
+  		pais: "$nombre",
+  		poblacionTotal: { $sum: "$regiones.poblacion" }
+  	}
+	});
+	
+//Mostrar los paises con poblacion superior a 40 millones
+db.paises.aggregate({
+  $project: {
+  	pais: "$nombre",
+  	poblacionTotal: { $sum: "$regiones.poblacion" }
+  }
+});
+
+
+//********** Operaciones de actualizacion
+//Listar Regiones de un Pais con la poblacion (consulta de verificacion)
+db.paises.aggregate(
+	{ $unwind: "$regiones" },
+	{ $match: { nombre: { $regex: "^francia$", $options: "i" } } },
+	{ $project: { 
+			region: "$regiones.nombre",
+			poblacion: "$regiones.poblacion"
+	 } }
+	);
+
+//Agregar una Region a un Pais	
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+		$push: {
+			regiones: {
+					nombre: "Ain",	
+					area: 5762.4 ,
+					poblacion: 626127
+				}
+		}
+	}
+);
+
+//Agregar varias Regiones a un Pais
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+		$push: {
+			regiones: {
+				$each: [
+          {
+  					nombre: "Aisne",	
+  					area: 7369 ,
+  					poblacion: 534490
+					},
+					{
+  					nombre: "Allier",	
+  					area: 7340,
+  					poblacion: 337171
+					},
+					{
+  					nombre: "Alpes de Alta Provenza",	
+  					area: 6925,
+  					poblacion: 161241
+					}
+				]
+      }
+		}
+	}
+);
+
+//Listar las Ciudades de un Pais con su Region (consulta de verificacion)
+db.paises.aggregate([
+  { $unwind: "$regiones" },
+  { $unwind: "$regiones.ciudades" },
+  { $match: { nombre: { $regex: "^francia$", $options: "i" } } },
+  { $project: { 
+		pais: "$nombre",
+		region: "$regiones.nombre",
+		ciudad: "$regiones.ciudades.nombre"
+ } }
+]);
+
+//Agregar varias ciudades a una region
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": {
+        $each: [
+          { nombre: "Saint-Quentin", poblacion: 53000 },
+          { nombre: "Soissons", poblacion: 28000 }
+        ]
+      }
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Aisne" } ]
+  }
+);
+
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": {
+        $each: [
+          { nombre: "Moulins", poblacion: 19000 },
+          { nombre: "Vichy", poblacion: 25000 }
+        ]
+      }
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Allier" } ]
+  }
+);
+
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": {
+        $each: [
+          { nombre: "Digne-les-Bains", poblacion: 17000 },
+          { nombre: "Manosque", poblacion: 22000 }
+        ]
+      }
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Alpes de Alta Provenza" } ]
+  }
+);
+
