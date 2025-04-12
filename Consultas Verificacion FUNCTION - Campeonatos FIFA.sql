@@ -6,7 +6,7 @@ SELECT *
 
 --Listar los Encuentros de un Grupo
 DECLARE @IdGrupo INT
-SET @IdGrupo=26
+SET @IdGrupo=25
 SELECT *
 	FROM vEnCuentro
 	WHERE (IdPais1 IN (SELECT IdPais FROM GrupoPais WHERE IdGrupo=@IdGrupo)
@@ -18,6 +18,9 @@ SELECT *
 	FROM fTablaPosiciones(25)
 	ORDER BY PUNTOS desc
 
+
+--Consultar el Estadio de un encuentro
+SELECT dbo.fObtenerEstadioEncuentro(126)
 
 --Eliminar Paises y Grupos de un Campeonato
 DELETE GP

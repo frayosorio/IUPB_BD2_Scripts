@@ -1,0 +1,68 @@
+//Obtener la región 'Amazonas'
+db.paises.aggregate(
+  { $unwind: "$regiones" },
+  { $match: { "regiones.nombre": "Amazonas" } },
+  { $project: { region: "$regiones" }}
+);
+/* Esto trae toda region que se llame 'Amazonas' independiente del País */
+
+//Obtener la región 'Amazonas' de 'Colombia' sin sensibilidad a mayusculas
+db.paises.aggregate(
+  { $match: { nombre: { $regex: "^colombia$", $options: "i" } } },
+  { $unwind: "$regiones" },
+  { $match: { "regiones.nombre": { $regex: "^amazonas$", $options: "i" } } },
+  { $project: { region: "$regiones" }}
+);
+
+//obtener los datos de la ciudad 'Yarumal'
+db.paises.aggregate([
+  { $unwind: "$regiones" },
+  { $unwind: "$regiones.ciudades" },
+  { $match: { "regiones.ciudades.nombre": { $regex: "^yarumal$", $options: "i" } } },
+  { $project: { 
+		pais: "$nombre",
+		region: "$regiones.nombre",
+		ciudad: "$regiones.ciudades.nombre"
+ } }
+]);
+
+//Listar las Regiones de un Pais con la Poblacion
+db.paises.aggregate(
+	{ $unwind: "$regiones" },
+	{ $match: { nombre: { $regex: "^colombia$", $options: "i" } } },
+	{ $project: { 
+			region: "$regiones.nombre",
+			poblacion: "$regiones.poblacion"
+	 } }
+	);
+	
+//Listar las ciudades de la region 'Boyacá'
+db.paises.aggregate(
+  { $match: { nombre: { $regex: "^colombia$", $options: "i" } } },
+  { $unwind: "$regiones" },
+  { $match: { "regiones.nombre": { $regex: "^boyacá$", $options: "i" } } },
+	{ $project: { ciudades: "$regiones.ciudades" } }
+);
+
+//Listar las Regiones del pais 'Colombia' con la Poblacion superior a 1 millon
+db.paises.aggregate(
+  { $match: { nombre: { $regex: "^colombia$", $options: "i" } } },
+  { $project: {
+		deptosMuchaPoblacion: { 
+			$map: {
+				input: {
+    			$filter: {
+    				input: "$regiones",
+    				as: "depto",
+    				cond: { $gte: [ "$$depto.poblacion", 4000000 ] }
+    			}
+        },
+				as: "depto",
+				in: {
+					nombre: "$$depto.nombre",
+					poblacion: "$$depto.poblacion"
+				}
+		}
+	}
+} }
+);
