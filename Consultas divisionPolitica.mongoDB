@@ -120,7 +120,8 @@ db.paises.aggregate({
 });
 
 
-//********** Operaciones de actualizacion
+//********** Operaciones de actualizacion **********
+
 //Listar Regiones de un Pais con la poblacion (consulta de verificacion)
 db.paises.aggregate(
 	{ $unwind: "$regiones" },
@@ -131,6 +132,31 @@ db.paises.aggregate(
 	 } }
 	);
 
+//Listar Regiones de un Pais (consulta de verificacion)
+db.paises.aggregate([
+  { $unwind: "$regiones" },
+  { $match: { nombre: { $regex: "^francia$", $options: "i" } } },
+  { $project: { 
+		pais: "$nombre",
+		region: "$regiones.nombre"
+ } }
+]);
+
+//Agregar regiones a un país
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+		$push: {
+			regiones: {
+				$each: [
+					{ nombre: "Altos Alpes" },
+					{ nombre: "Alpes Marítimos" }
+				]
+      }
+		}
+	}
+);
+
 //Agregar una Region a un Pais	
 db.paises.updateOne(
   { nombre: { $regex: "^francia$", $options: "i" } },
@@ -140,6 +166,20 @@ db.paises.updateOne(
 					nombre: "Ain",	
 					area: 5762.4 ,
 					poblacion: 626127
+				}
+		}
+	}
+);
+
+db.paises.updateOne(
+  { nombre: { $regex: "^estados unidos$", $options: "i" } },
+  {
+		$push: {
+			regiones: {
+					nombre: "Florida",	
+					codigo: "FL",
+					area: 	170312,
+					poblacion: 	21538187
 				}
 		}
 	}
@@ -173,6 +213,21 @@ db.paises.updateOne(
 	}
 );
 
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+		$push: {
+			regiones: {
+				$each: [
+					{ nombre: "Altos Alpes" },
+					{ nombre: "Alpes Marítimos" }
+				]
+      }
+		}
+	}
+);
+
+
 //Listar las Ciudades de un Pais con su Region (consulta de verificacion)
 db.paises.aggregate([
   { $unwind: "$regiones" },
@@ -182,6 +237,19 @@ db.paises.aggregate([
 		pais: "$nombre",
 		region: "$regiones.nombre",
 		ciudad: "$regiones.ciudades.nombre"
+ } }
+]);
+
+db.paises.aggregate([
+  { $unwind: "$regiones" },
+  { $unwind: "$regiones.ciudades" },
+  { $match: { nombre: { $regex: "^estados unidos$", $options: "i" } } },
+  { $project: { 
+		pais: "$nombre",
+		region: "$regiones.nombre",
+		poblacionRegion: "$regiones.poblacion",
+		ciudad: "$regiones.ciudades.nombre",
+		poblacionCiudad: "$regiones.ciudades.poblacion",
  } }
 ]);
 
@@ -200,6 +268,23 @@ db.paises.updateOne(
   },
   {
     arrayFilters: [ { "r.nombre": "Aisne" } ]
+  }
+);
+
+db.paises.updateOne(
+  { nombre: { $regex: "^estados unidos$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": {
+        $each: [
+          { nombre: "Palm Springs", poblacion: 18928 },
+          { nombre: "Fort Lauderdale" },
+        ]
+      }
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Florida" } ]
   }
 );
 
@@ -237,3 +322,175 @@ db.paises.updateOne(
   }
 );
 
+//Agregar una ciudad a una region
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": 
+          { nombre: "Niza", poblacion: 	342295 }	  
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Alpes Marítimos" } ]
+  }
+);
+
+db.paises.updateOne(
+  { nombre: { $regex: "^francia$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": 
+          { nombre: "Gap", poblacion: 40631 }	  
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Altos Alpes" } ]
+  }
+);
+
+db.paises.updateOne(
+  { nombre: { $regex: "^estados unidos$", $options: "i" } },
+  {
+    $push: {
+      "regiones.$[r].ciudades": 
+          { nombre: "Miami" }	  
+    }
+  },
+  {
+    arrayFilters: [ { "r.nombre": "Florida" } ]
+  }
+);
+
+//Cambiar datos de una Region a un Pais
+db.paises.updateOne(
+	{ nombre: { $regex: "^francia$", $options: "i" }, 
+		"regiones.nombre": "Altos Alpes" 
+	},
+	{
+		$set:{
+			"regiones.$.poblacion": 	139554,
+			"regiones.$.area": 5549
+		}
+	}
+);
+
+db.paises.updateOne(
+	{ nombre: { $regex: "^francia$", $options: "i" }, 
+		"regiones.nombre": "Alpes Marítimos" 
+	},
+	{
+		$set:{
+			"regiones.$.poblacion": 1083268,
+			"regiones.$.area": 4299
+		}
+	}
+);
+
+//Cambiar datos de una Ciudad en una Region en un Pais
+db.paises.updateOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" }
+	},
+	{
+		$set:{
+			"regiones.$[r].ciudades.$[c].poblacion": 	6138333
+		}
+	},
+	{
+		arrayFilters: [ 
+			{ "r.nombre": "Florida" },
+			{ "c.nombre": "Miami" }
+		]
+	});
+
+db.paises.updateOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" }
+	},
+	{
+		$set:{
+			"regiones.$[r].ciudades.$[c].poblacion": 165521
+		}
+	},
+	{
+		arrayFilters: [ 
+			{ "r.nombre": "Florida" },
+			{ "c.nombre": "Fort Lauderdale" }
+		]
+	});
+
+db.paises.updateOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" }
+	},
+	{
+		$set:{
+			"regiones.$[r].ciudades.$[c].poblacion": 165521
+		}
+	},
+	{
+		arrayFilters: [ 
+			{ "r.nombre": "Florida" },
+			{ "c.nombre": "Fort Lauderdale" }
+		]
+	});
+
+db.paises.updateOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" }
+	},
+	{
+		$set:{
+			"regiones.$[r].ciudades.$[c].poblacion": 238300
+		}
+	},
+	{
+		arrayFilters: [ 
+			{ "r.nombre": "Florida" },
+			{ "c.nombre": "Orlando" }
+		]
+	});
+
+//Eliminar una Ciudad de una Region de un Pais
+db.paises.updateOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" },
+		"regiones.nombre": "Florida" 
+	},
+	{
+		$pull: {
+			"regiones.$.ciudades": { nombre: "Soissons" }
+		}
+	}
+);
+
+//Eliminar una Region de un Pais
+db.paises.updateOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" }
+	},
+	{
+		$pull: {
+			regiones: { nombre: "Antioquia" }
+		}
+	}
+);
+
+//Eliminar un Pais
+db.paises.deleteOne(
+	{ nombre: { $regex: "^estados unidos$", $options: "i" } }
+);
+
+db.paises.deleteOne(
+	{ nombre: { $regex: "^antioquia$", $options: "i" } }
+);
+
+//Agregar un Pais
+db.paises.insertOne(
+	{ id:999, nombre:'Antioquia', continente: 'AMERICA', tipoRegion: 'PROVINCIAS', codigoAlfa2: 'AN', codigoAlfa3: 'ANT'}
+);
+
+//Modificar datos de un Pais
+db.paises.updateOne(
+	{ nombre: { $regex: "^antioquia$", $options: "i" } },
+	{
+		$set: {
+			tipoRegion: "ESTADOS"
+		}
+	}
+);
