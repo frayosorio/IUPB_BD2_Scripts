@@ -494,3 +494,36 @@ db.paises.updateOne(
 		}
 	}
 );
+
+//Encontrar las monedas usadas por países del continente 'EUROPA'
+db.monedas.aggregate(
+	{ $unwind: "$paises" },
+  {
+		$lookup: {
+			from: "paises",
+			localField: "paises.codigoAlfa2",
+			foreignField: "codigoAlfa2",
+			as: "paisInfo"
+		}
+	},
+  { $unwind: "$paisInfo" },
+  { $match: { "paisInfo.continente": "EUROPA"} },
+  {
+		$project: {
+			moneda: 1,
+			pais: "$paises.nombre"
+		}
+	}
+);
+
+//Ver qué países no tienen moneda asociada
+const codigoAlfaConMoneda = db.monedas.aggregate(
+	[
+    { $unwind: "$paises" },
+    { $group: { _id : "$paises.codigoAlfa2" } }
+	]
+).toArray().map(m => m._id );
+
+db.paises.find({ codigoAlfa2 : { $nin: codigoAlfaConMoneda } });
+
+db.paises.find({ nombre: "Antioquia" });
