@@ -19,11 +19,12 @@ CREATE TABLE pais(
 	UNIQUE(nombre)
 );
 
-CREATE TABLE ciudad(
+CREATE TABLE  ciudad(
 	id SERIAL PRIMARY KEY,
 	nombre VARCHAR(100) NOT NULL,
+	region VARCHAR(100) NOT NULL,
 	idpais INT NOT NULL REFERENCES pais(id),
-	UNIQUE(idpais, nombre)
+	UNIQUE(idpais, region, nombre)
 );
 
 CREATE TYPE direcciontipo 
@@ -32,18 +33,20 @@ AS (
 	idciudad INT
 );
 
+/*
 SELECT  *--typname, typcategory, typtype 
 	FROM pg_type 
-	--WHERE typname='direcciontipo'
 	ORDER BY typname;
+*/
 
 CREATE TABLE persona(
 	id SERIAL PRIMARY KEY,
 	apellido1 VARCHAR(50) NOT NULL,
 	apellido2 VARCHAR(50) NOT NULL,
-	nombre VARCHAR(100) NOT NULL,
+	nombres VARCHAR(100) NOT NULL,
 	documento VARCHAR(20) NOT NULL,
 	idtipodocumento INT NOT NULL REFERENCES tipodocumento(id),
+	fechanacimiento DATE NOT NULL,
 	idciudadnacimiento INT NOT NULL REFERENCES ciudad(id),
 	direccion DIRECCIONTIPO,
 	movil VARCHAR(100),
@@ -89,4 +92,74 @@ CREATE TABLE informacionlaboral (
 	informacion informacionlaboraltipo
 );
 
+CREATE TABLE nivelacademico(
+	id SERIAL PRIMARY KEY,
+	nivel VARCHAR(50) NOT NULL,
+	UNIQUE(nivel)
+);
+
+CREATE TABLE gradoacademico(
+	id SERIAL PRIMARY KEY,
+	grado VARCHAR(50) NOT NULL,
+	idnivel INT NOT NULL references nivelacademico(id),
+	UNIQUE(grado)
+);
+
+CREATE TABLE sector(
+	id SERIAL PRIMARY KEY,
+	sector VARCHAR(50) NOT NULL,	--Ej: Tecnología, Finanzas, Salud
+	UNIQUE(sector)
+);
+
+CREATE TABLE idioma(
+	id SERIAL PRIMARY KEY,
+	idioma VARCHAR(50) NOT NULL,
+	UNIQUE(idioma)
+);
+
+CREATE TYPE habilidadbasetipo 
+AS (
+	nombre VARCHAR(100),
+	descripcion TEXT,
+	nivel VARCHAR(50),	--Ej: de 1 a 10, A1 a C1
+	añosexperiencia INT
+);
+
+CREATE TYPE habilidadprofesionaltipo 
+AS (
+	BASE habilidadbasetipo,
+	idsector INT,
+	certificacion TEXT	--eJ: Certificacion AWS, PMP, ITIL, etc.
+);
+
+CREATE TYPE habilidadpersonaltipo 
+AS (
+	BASE habilidadbasetipo,
+	categoria VARCHAR(50),	--Ej: Música, Pintura, Deporte
+	frecuencia VARCHAR(50)	--Ej: Semanal, Diario, Esporádico
+);
+
+CREATE TYPE habilidadidiomatipo 
+AS (
+	BASE habilidadbasetipo,
+	ididioma INT,
+	nivellectura VARCHAR(50),	--Ej: Alto, Intermedio, Bajo
+	nivelescritura VARCHAR(50),
+	nivelconversacion VARCHAR(50)
+);
+
+CREATE TABLE habilidadprofesional(
+	idpersona INT NOT NULL references persona(id),
+	habilidad habilidadprofesionaltipo
+);
+
+CREATE TABLE habilidadpersonal(
+	idpersona INT NOT NULL references persona(id),
+	habilidad habilidadpersonaltipo
+);
+
+CREATE TABLE habilidadidioma(
+	idpersona INT NOT NULL references persona(id),
+	habilidad habilidadidiomatipo
+);
 
